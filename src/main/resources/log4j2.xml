@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration status="off" monitorInterval="60">
+
+    <properties>
+        <property name="LOG_HOME">C:\work\log4j2-log</property>
+        <property name="consolePattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] %class{36} (%M:%L) - %msg%n</property>
+        <property name="errorPattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] %class{36} (%M:%L) %X{requestInfo} - %msg%n</property>
+    </properties>
+
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${consolePattern}" />
+        </Console>
+
+        <RollingRandomAccessFile name="info"
+                                 fileName="${LOG_HOME}/info.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/info-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${consolePattern}" />
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+                <SizeBasedTriggeringPolicy size="20MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="warn"
+                                 fileName="${LOG_HOME}/warn.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/warn-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${errorPattern}" />
+            <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+                <SizeBasedTriggeringPolicy size="20MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="error"
+                                 fileName="${LOG_HOME}/error.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="${errorPattern}" />
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+                <SizeBasedTriggeringPolicy size="20MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+    </Appenders>
+</Configuration>

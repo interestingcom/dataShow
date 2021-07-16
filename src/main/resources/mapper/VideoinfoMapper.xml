@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dao.VideoinfoMapper">
+  <resultMap id="BaseResultMap" type="com.data.pojo.Videoinfo">
+    <id column="videoId" jdbcType="INTEGER" property="videoid" />
+    <result column="videoName" jdbcType="VARCHAR" property="videoname" />
+    <result column="videoStartTime" jdbcType="TIMESTAMP" property="videostarttime" />
+    <result column="videoDate" jdbcType="DATE" property="videodate" />
+    <result column="videoEndTime" jdbcType="TIMESTAMP" property="videoendtime" />
+  </resultMap>
+
+  <select id="getVideosByDate" resultMap="BaseResultMap" parameterType="java.util.Date">
+     select * from videoInfo where videoDate=date (#{videoDate})
+  </select>
+
+
+</mapper>

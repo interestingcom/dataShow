@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dao.StatusinfoMapper">
+  <resultMap id="BaseResultMap" type="com.data.pojo.Statusinfo">
+    <id column="StatusID" jdbcType="INTEGER" property="statusid" />
+    <result column="SatusInfo" jdbcType="VARCHAR" property="satusinfo" />
+    <result column="StatusName" jdbcType="VARCHAR" property="statusname" />
+  </resultMap>
+
+  <select id="getStatus" resultMap="BaseResultMap">
+    select * from statusInfo
+  </select>
+
+</mapper>

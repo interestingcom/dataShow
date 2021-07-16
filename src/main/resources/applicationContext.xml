@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/cache
+       http://www.springframework.org/schema/cache/spring-cache-4.2.xsd
+       http://www.springframework.org/schema/task
+       http://www.springframework.org/schema/task/spring-task-4.1.xsd
+    ">
+
+
+ <!--    此标签用来扫描包以及包下面的类，被扫描到的类就可以使用注解，如@Service等，同时被扫描到后就会被放入IOC容器中，
+     之所以不扫描Controller，就是因为Controller是要交给SpringMVC扫描的-->
+ <context:component-scan base-package="com.data" >
+  <!--不扫描Controller包-->
+  <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+ </context:component-scan>
+
+ <!--这里引入之前创建的jdbc配置文件，这样可以很灵活的改变配置，而不需要修改xml文件-->
+ <!--    ignore-unresolvable：是否忽略解析不到的属性，如果不忽略，找不到将抛出异常。但它设置为true的主要原因是:
+     配置文件${}找不到对应占位符的值 不会报错，会直接赋值'${}'；如果设为false，会直接报错-->
+ <context:property-placeholder location="classpath:db.properties" ignore-unresolvable="true"/>
+
+
+ <!-- 阿里 druid数据库连接池 -->
+ <bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+  <!--配置连接池属性-->
+  <property name="driverClassName" value="${driverClassName}" />
+  <property name="url" value="${jdbc_url}" />
+  <property name="username" value="${jdbc_username}" />
+  <property name="password" value="${jdbc_password}" />
+  <property name="initialSize" value="10" />
+  <property name="maxActive" value="100" />
+  <property name="minIdle" value="10" />
+  <property name="maxWait" value="60000" />
+  <property name="validationQuery" value="${validationQuery}" />
+  <property name="testOnBorrow" value="false" />
+  <property name="testOnReturn" value="false" />
+  <property name="testWhileIdle" value="true" />
+  <property name="timeBetweenEvictionRunsMillis" value="60000" />
+  <property name="minEvictableIdleTimeMillis" value="25200000" />
+  <property name="removeAbandoned" value="true" />
+  <property name="removeAbandonedTimeout" value="1800" />
+  <property name="logAbandoned" value="true" />
+  <property name="filters" value="mergeStat" />
+  <property name="connectionProperties" value="druid.stat.slowSqlMillis=5000" />
+ </bean>
+
+
+
+ <!-- mybatis配置-->
+ <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+  <!--注入数据库连接池-->
+  <property name="dataSource" ref="dataSource"/>
+  <!-- 配置 MyBaties 全局配置⽂件:mybatis-config.xml -->
+  <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+  <!-- 扫描 sql 配置⽂件:dao 需要的 xml ⽂件 -->
+  <property name="mapperLocations">
+   <array>
+    <value>classpath:mapper/*.xml</value>
+   </array>
+  </property>
+  <property name="plugins">
+   <array>
+    <bean class="com.github.pagehelper.PageInterceptor">
+     <property name="properties">
+      <value>
+       helperDialect=mysql
+       params=count=countSql
+       autoRuntimeDialect=true
+      </value>
+     </property>
+    </bean>
+   </array>
+  </property>
+ </bean>
+
+
+ <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+  <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"/>
+  <constructor-arg name="executorType" value="BATCH"/>
+ </bean>
+
+
+ <!-- 配置扫描 dao 接⼝包， 动态实现 dao 接⼝， 注⼊到 Spring 容器中 -->
+ <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+  <!-- 给出需要扫描 dao 接⼝包 -->
+  <property name="basePackage" value="com.data.dao"/>
+  <!-- 注⼊ sqlSessionFactory -->
+  <!--<property name = "sqlSessionFactoryBeanName"  value = "sqlSessionFactory"/>-->
+ </bean>
+
+ <!-- 事务配置-->
+ <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+  <!--控制数据源-->
+  <property name="dataSource" ref="dataSource"/>
+ </bean>
+
+ <!--开启基于注解的事务配置-->
+ <aop:config>
+  <aop:pointcut id="txPoint" expression="execution(* com.data.*.service..*Service*.*(..))"/>
+  <!--配置事务增强-->
+  <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint"/>
+ </aop:config>
+
+ <!--配置事务增强 事务如何切入-->
+ <tx:advice id="txAdvice" transaction-manager="transactionManager">
+  <tx:attributes>
+   <!--
+   <tx:method name="list*" read-only="true"/>
+   <tx:method name="get*" read-only="true" /> -->
+   <tx:method name="*WithLock" isolation="SERIALIZABLE"/>
+   <tx:method name="*"/>
+  </tx:attributes>
+ </tx:advice>
+
+
+
+ <!-- 启用对事务注解的支持 -->
+ <tx:annotation-driven transaction-manager="transactionManager"/>
+
+ <!--定时器配置-->
+ <task:executor id="executor" pool-size="30" />
+ <task:scheduler id="myScheduler" pool-size="10"/>
+ <task:annotation-driven scheduler="myScheduler" executor="executor"/>
+
+</beans>

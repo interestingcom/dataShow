@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dao.StudentInformationDao">
+  <resultMap id="BaseResultMap" type="com.data.pojo.StudentInformation">
+    <id column="student_ID" jdbcType="INTEGER" property="studentId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="sex" jdbcType="VARCHAR" property="sex" />
+    <result column="major" jdbcType="VARCHAR" property="major" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="grade" jdbcType="INTEGER" property="grade" />
+    <result column="GPA" jdbcType="REAL" property="gpa" />
+    <result column="entrance_examination" jdbcType="REAL" property="entranceExamination" />
+    <result column="origin" jdbcType="VARCHAR" property="origin" />
+  </resultMap>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select * from student_information
+  </select>
+
+</mapper>
